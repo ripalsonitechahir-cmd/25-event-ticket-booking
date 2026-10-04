@@ -1,0 +1,13 @@
+**/node_modules
+**/dist
+**/.env
+**/*.db
+**/*.db-journal
+**/*.log
+.git
+.gitignore
+k8s
+*.docx
+README.md
+Dockerfile
+docker-compose.yml

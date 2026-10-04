@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: event-ticket-booking
+data:
+  PORT: "4000"
+  DATABASE_URL: "file:/data/app.db"
+  NODE_ENV: "production"

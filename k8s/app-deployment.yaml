@@ -1,0 +1,62 @@
+# Single pod: the database is a SQLite file on a ReadWriteOnce volume, so it cannot be
+# shared by several replicas. Recreate avoids two pods touching the file during a rollout.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  namespace: event-ticket-booking
+  labels:
+    app: event-ticket-booking
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: event-ticket-booking
+  template:
+    metadata:
+      labels:
+        app: event-ticket-booking
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: app
+          image: event-ticket-booking:1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 4000
+          envFrom:
+            - configMapRef:
+                name: app-config
+            - secretRef:
+                name: app-secret
+          resources:
+            requests:
+              cpu: 100m
+              memory: 192Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 4000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 4000
+            initialDelaySeconds: 20
+            periodSeconds: 20
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: app-data
